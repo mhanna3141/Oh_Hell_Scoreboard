@@ -2,6 +2,7 @@ import ttkbootstrap as ttk
 import tkinter as tk
 from tkinter import simpledialog, messagebox
 import re
+from functools import partial
 
 
 # a class for what need to be in each tab
@@ -14,6 +15,48 @@ class gameRounds:
 
         # add frame to notebook
         notebook_gameRounds.add(child=self.frame_gameRoundX, text=str(currentGameRound))
+
+        # keeps track of the bids of each player and their tricks
+        # {"player": (nameLabel, bidEntry, tricksEntry)}
+        self.playerBidsAndTricks = {}
+
+        # remember the name of the last player
+        previousPlayer = None
+
+        # create an entry for the bids and tricks of each player
+        for playerIndex in range(listbox_players.size()):
+
+            # get the name of the player
+            playerName = listbox_players.get(playerIndex)[0:-3]
+
+            # create widgets for player information
+            playerWidgets = (ttk.Label(master=self.frame_gameRoundX, text=playerName),  # label w/player name
+                             ttk.Entry(master=self.frame_gameRoundX, width=2),  # entry for bid
+                             ttk.Entry(master=self.frame_gameRoundX, width=2))  # entry for trick
+
+            # place widgets in frame
+            playerWidgets[0].grid(row=playerIndex, column=0)
+            playerWidgets[1].grid(row=playerIndex, column=1)
+            playerWidgets[2].grid(row=playerIndex, column=2)
+
+            # not the first iteration of the loop
+            if previousPlayer is not None:
+
+                # set the previous bid entry to focus on the current bid entry after pressing enter/return
+                self.playerBidsAndTricks[previousPlayer][1].bind('<Return>', partial(nextFocus, playerWidgets[1]))
+
+                # set the previous trick entry to focus on the current trick entry after pressing enter/return
+                self.playerBidsAndTricks[previousPlayer][2].bind('<Return>', partial(nextFocus, playerWidgets[2]))
+
+            # update the previous player
+            previousPlayer = playerName
+
+            # save player widgets under player name
+            self.playerBidsAndTricks[playerName] = playerWidgets
+
+
+def nextFocus(widget, event):
+    widget.focus_set()
 
 
 # adds a tab for a new round
@@ -149,7 +192,7 @@ win.bind("y", addRoundTab)
 
 # tabs with each round of the game
 notebook_gameRounds = ttk.Notebook(master=frame_main)
-notebook_gameRounds.grid(row=0, column=1)
+notebook_gameRounds.grid(row=1, column=1, sticky="N")
 
 # keeps track of which round we're on
 currentGameRound = 0
