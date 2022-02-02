@@ -4,6 +4,30 @@ from tkinter import simpledialog, messagebox
 import re
 
 
+# a class for what need to be in each tab
+class gameRounds:
+    def __init__(self, frame_gameRoundX):
+
+        # add the frame, put it somewhere
+        self.frame_gameRoundX = frame_gameRoundX
+        self.frame_gameRoundX.grid(row=0, column=0)
+
+        # add frame to notebook
+        notebook_gameRounds.add(child=self.frame_gameRoundX, text=str(currentGameRound))
+
+
+# adds a tab for a new round
+def addRoundTab(event=None):
+    global currentGameRound
+
+    # next round
+    currentGameRound += 1
+
+    # create new tab in the game rounds notebook
+    frame_newRoundTab = ttk.Frame(master=frame_main)
+    gameRounds(frame_newRoundTab)
+
+
 # runs after clicked add player button
 def butt_cmd_addPlayer(event=None):
 
@@ -42,6 +66,7 @@ def cmd_removePlayer(event=None):
     listbox_players.delete(listbox_players.curselection())
 
 
+# starts the game
 def cmd_startGame(event=None):
 
     # there are 0 or less than 0 players
@@ -65,9 +90,17 @@ def cmd_startGame(event=None):
     if startGameConformation == "no":
         return
 
+    # unbind the add, and remove player hot keys
     win.unbind("p")
     win.unbind("a")
     win.unbind("<BackSpace>")
+
+    # hide the add player and start game buttons
+    button_addPlayer.grid_forget()
+    button_startGame.grid_forget()
+
+    # start a new round
+    addRoundTab()
 
 
 # create a window
@@ -112,6 +145,14 @@ win.attributes('-fullscreen', True)
 win.bind("p", butt_cmd_addPlayer)
 win.bind("a", butt_cmd_addPlayer)
 win.bind("<BackSpace>", cmd_removePlayer)
+win.bind("y", addRoundTab)
+
+# tabs with each round of the game
+notebook_gameRounds = ttk.Notebook(master=frame_main)
+notebook_gameRounds.grid(row=0, column=1)
+
+# keeps track of which round we're on
+currentGameRound = 0
 
 # a dictionary of the score of each player
 playerScores = {}
