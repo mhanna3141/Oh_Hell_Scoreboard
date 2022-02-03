@@ -189,15 +189,41 @@ def cmd_startGame(event=None):
     addRoundTab()
 
 
+# calculates total scores for everyone
 def getScores(event=None):
+    global playerScores
+
+    # new scores all set to 0
+    newPlayerScores = {}
+    for playerName in playerScores:
+        newPlayerScores[playerName] = 0
 
     # loop through each game tab
     for tab in gameRoundTabs:
 
         # loop through each player
-        for playerName in playerScores:
+        for playerName in newPlayerScores:
 
-            print(tab.getPlayerScoreThisRound(playerName))
+            newPlayerScores[playerName] += tab.getPlayerScoreThisRound(playerName)
+
+    playerScores = newPlayerScores
+
+    # add new tab
+    addRoundTab()
+    updatePlayerScoresInListbox()
+
+
+def updatePlayerScoresInListbox():
+    listOfPlayers = list(playerScores.keys())
+
+    listOfPlayers = sorted(listOfPlayers, key=lambda key: playerScores[key])
+    listOfPlayers.reverse()
+
+    for index in range(len(listOfPlayers)):
+        playerName = listOfPlayers[index]
+        t = playerName + " (" + str(playerScores[playerName]) + ")"
+        listbox_players.delete(index)
+        listbox_players.insert(index, t)
 
 
 # create a window
