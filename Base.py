@@ -20,19 +20,30 @@ class gameRounds:
         # {"player": (nameLabel, bidEntry, tricksEntry)}
         self.playerBidsAndTricks = {}
 
+        # varStrings for the bids
+        self.bidVariableStrings = {}
+
+        # varStrings for the tricks
+        self.trickVariableStrings = {}
+
         # remember the name of the last player
         previousPlayer = None
 
         # create an entry for the bids and tricks of each player
         for playerIndex in range(listbox_players.size()):
 
+            bidStringVar = ttk.StringVar()
+            trickStringVar = ttk.StringVar()
+
             # get the name of the player
-            playerName = listbox_players.get(playerIndex)[0:-3]
+
+            playerName = listbox_players.get(playerIndex).split("(")[0]
+            playerName = playerName[0:-1]
 
             # create widgets for player information
-            playerWidgets = (ttk.Label(master=self.frame_gameRoundX, text=playerName),  # label w/player name
-                             ttk.Entry(master=self.frame_gameRoundX, width=2),  # entry for bid
-                             ttk.Entry(master=self.frame_gameRoundX, width=2))  # entry for trick
+            playerWidgets = (ttk.Label(master=self.frame_gameRoundX, text=playerName, font=("Constantia", 20)),  # label w/player name
+                             ttk.Entry(master=self.frame_gameRoundX, width=2, font=("Constantia", 20), textvariable=bidStringVar),  # entry for bid
+                             ttk.Entry(master=self.frame_gameRoundX, width=2, font=("Constantia", 20), textvariable=trickStringVar))  # entry for trick
 
             # place widgets in frame
             playerWidgets[0].grid(row=playerIndex, column=0)
@@ -54,21 +65,54 @@ class gameRounds:
             # save player widgets under player name
             self.playerBidsAndTricks[playerName] = playerWidgets
 
+            # save the bid string variable
+            self.bidVariableStrings[playerName] = bidStringVar
 
+            # save the trick string variable
+            self.trickVariableStrings[playerName] = trickStringVar
+
+    # returns the score that a given player has gotten this round
+    def getPlayerScoreThisRound(self, playerName):
+
+        bid = self.bidVariableStrings[playerName].get()
+        trick = self.trickVariableStrings[playerName].get()
+
+        if bid == "" or trick == "":
+            return 0
+
+        try:
+
+            bid = int(bid)
+            trick = int(trick)
+
+        except:
+
+            return 0
+
+        diff = abs(bid - trick)
+
+        if diff == 0:
+            return 10 + bid**2
+
+        else:
+            return -10 * diff
+
+
+# moves focus to the next widget
 def nextFocus(widget, event):
     widget.focus_set()
 
 
 # adds a tab for a new round
 def addRoundTab(event=None):
-    global currentGameRound
+    global currentGameRound, gameRoundTabs
 
     # next round
     currentGameRound += 1
 
     # create new tab in the game rounds notebook
     frame_newRoundTab = ttk.Frame(master=frame_main)
-    gameRounds(frame_newRoundTab)
+    gameRoundTabs.append(gameRounds(frame_newRoundTab))
 
 
 # runs after clicked add player button
@@ -99,13 +143,12 @@ def butt_cmd_addPlayer(event=None):
 
     # add new player to end of the player list
     listbox_players.insert("end", playerName + " (0)")
-    playerScores[playerName] = 0
+    playerScores[playerName] = []
 
 
 # removes selected player
 def cmd_removePlayer(event=None):
-    print(listbox_players.get(listbox_players.curselection()))
-    del playerScores[listbox_players.curselection()]
+    del playerScores[listbox_players.get(listbox_players.curselection())[0:-4]]
     listbox_players.delete(listbox_players.curselection())
 
 
@@ -146,6 +189,17 @@ def cmd_startGame(event=None):
     addRoundTab()
 
 
+def getScores(event=None):
+
+    # loop through each game tab
+    for tab in gameRoundTabs:
+
+        # loop through each player
+        for playerName in playerScores:
+
+            print(tab.getPlayerScoreThisRound(playerName))
+
+
 # create a window
 win = ttk.Window(themename="yeti")
 win.grid_rowconfigure(0, weight=1)
@@ -175,11 +229,15 @@ listbox_players.grid(row=1, column=0)
 
 # button to add player to the game
 button_addPlayer = ttk.Button(master=frame_main, text="Add Player", command=butt_cmd_addPlayer)
-button_addPlayer.grid(row=0, column=0)
+button_addPlayer.grid(row=3, column=0, sticky="W")
 
 # button starts game
 button_startGame = ttk.Button(master=frame_main, text="Start Game", command=cmd_startGame)
-button_startGame.grid(row=0, column=3)
+button_startGame.grid(row=3, column=0, sticky="E")
+
+#
+button_nextRound = ttk.Button(master=frame_main, text="Next Round", command=getScores)
+button_nextRound.grid(row=3, column=0)
 
 # full screen
 win.attributes('-fullscreen', True)
@@ -193,6 +251,13 @@ win.bind("y", addRoundTab)
 # tabs with each round of the game
 notebook_gameRounds = ttk.Notebook(master=frame_main)
 notebook_gameRounds.grid(row=1, column=1, sticky="N")
+
+# tells people how cool I am
+label_myPlug = ttk.Label(master=frame_main, text="Mark HannaH is so cool", font=("Constantia", 50))
+label_myPlug.grid(row=0, column=0, sticky="n", pady=20)
+
+# holds the gameRounds objects
+gameRoundTabs = []
 
 # keeps track of which round we're on
 currentGameRound = 0
