@@ -16,6 +16,12 @@ class gameRounds:
         # add frame to notebook
         notebook_gameRounds.add(child=self.frame_gameRoundX, text=str(currentGameRound))
 
+        self.bidLabel = ttk.Label(master=self.frame_gameRoundX, text="Bid")
+        self.bidLabel.grid(row=0, column=1)
+
+        self.trickLabel = ttk.Label(master=self.frame_gameRoundX, text="Trick")
+        self.trickLabel.grid(row=0, column=2)
+
         # keeps track of the bids of each player and their tricks
         # {"player": (nameLabel, bidEntry, tricksEntry)}
         self.playerBidsAndTricks = {}
@@ -46,9 +52,9 @@ class gameRounds:
                              ttk.Entry(master=self.frame_gameRoundX, width=2, font=("Constantia", 20), textvariable=trickStringVar))  # entry for trick
 
             # place widgets in frame
-            playerWidgets[0].grid(row=playerIndex, column=0)
-            playerWidgets[1].grid(row=playerIndex, column=1)
-            playerWidgets[2].grid(row=playerIndex, column=2)
+            playerWidgets[0].grid(row=playerIndex + 1, column=0)
+            playerWidgets[1].grid(row=playerIndex + 1, column=1)
+            playerWidgets[2].grid(row=playerIndex + 1, column=2)
 
             # not the first iteration of the loop
             if previousPlayer is not None:
