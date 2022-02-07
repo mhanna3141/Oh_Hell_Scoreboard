@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import simpledialog, messagebox
 import re
 from functools import partial
+from PIL import ImageTk, Image
 
 
 # a class for what need to be in each tab
@@ -274,6 +275,10 @@ yOffSet = 50
 
 # change the dimensions of window and the initial location
 win.geometry(str(width) + "x" + str(height) + "+" + str(xOffSet) + "+" + str(yOffSet))
+
+# background image
+img = ImageTk.PhotoImage(Image.open("oh hell background.png"))
+ttk.Label(master=win, image=img).grid(row=0, column=0)
 
 # main frame
 frame_main = ttk.Frame(master=win)
