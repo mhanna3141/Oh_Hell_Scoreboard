@@ -35,16 +35,17 @@ class gameRounds:
         # remember the name of the last player
         previousPlayer = None
 
+        # the name of the first player iterated through
+        firstPlayerName = None
+
         # create an entry for the bids and tricks of each player
-        for playerIndex in range(listbox_players.size()):
+        for playerIndex in range(len(playerOrder)):
 
             bidStringVar = ttk.StringVar()
             trickStringVar = ttk.StringVar()
 
             # get the name of the player
-
-            playerName = listbox_players.get(playerIndex).split("(")[0]
-            playerName = playerName[0:-1]
+            playerName = playerOrder[playerIndex]
 
             # create widgets for player information
             playerWidgets = (ttk.Label(master=self.frame_gameRoundX, text=playerName, font=("Constantia", 20)),  # label w/player name
@@ -56,6 +57,15 @@ class gameRounds:
             playerWidgets[1].grid(row=playerIndex + 1, column=1)
             playerWidgets[2].grid(row=playerIndex + 1, column=2)
 
+            # save player widgets under player name
+            self.playerBidsAndTricks[playerName] = playerWidgets
+
+            # save the bid string variable
+            self.bidVariableStrings[playerName] = bidStringVar
+
+            # save the trick string variable
+            self.trickVariableStrings[playerName] = trickStringVar
+
             # not the first iteration of the loop
             if previousPlayer is not None:
 
@@ -65,17 +75,29 @@ class gameRounds:
                 # set the previous trick entry to focus on the current trick entry after pressing enter/return
                 self.playerBidsAndTricks[previousPlayer][2].bind('<Return>', partial(nextFocus, playerWidgets[2]))
 
+            # first iteration of the loop
+            else:
+
+                # keep the name of the first player
+                firstPlayerName = playerName
+
+            # last iteration of the loop
+            if playerIndex + 1 == len(playerOrder):
+
+                # pressing return on the last bid in the column will take you to the top of the tricks column
+                self.playerBidsAndTricks[playerName][1].bind('<Return>', partial(nextFocus, self.playerBidsAndTricks[firstPlayerName][2]))
+
+                # pressing return on the last trick item will go to the next round
+                self.playerBidsAndTricks[playerName][2].bind('<Return>', getScores)
+
             # update the previous player
             previousPlayer = playerName
 
-            # save player widgets under player name
-            self.playerBidsAndTricks[playerName] = playerWidgets
+        # set the focus to this tab
+        notebook_gameRounds.select(self.frame_gameRoundX)
 
-            # save the bid string variable
-            self.bidVariableStrings[playerName] = bidStringVar
-
-            # save the trick string variable
-            self.trickVariableStrings[playerName] = trickStringVar
+        # set the focus to the first bid entry
+        self.playerBidsAndTricks[firstPlayerName][1].focus_set()
 
     # returns the score that a given player has gotten this round
     def getPlayerScoreThisRound(self, playerName):
@@ -150,11 +172,13 @@ def butt_cmd_addPlayer(event=None):
     # add new player to end of the player list
     listbox_players.insert("end", playerName + " (0)")
     playerScores[playerName] = []
+    playerOrder.append(playerName)
 
 
 # removes selected player
 def cmd_removePlayer(event=None):
     del playerScores[listbox_players.get(listbox_players.curselection())[0:-4]]
+    playerOrder.remove(listbox_players.curselection())
     listbox_players.delete(listbox_players.curselection())
 
 
@@ -296,6 +320,9 @@ currentGameRound = 0
 
 # a dictionary of the score of each player
 playerScores = {}
+
+# list containing strings with the names of the players
+playerOrder = []
 
 # main loop
 win.mainloop()
